@@ -70,6 +70,22 @@ void fix_up_component_pointers(elements * world)
     }
 }
 
+void print_n_stars(int qty)
+{
+    for (int i=0; i<qty; i++)
+        printf("%c", '*');
+}
+
+void run_equation(element * element, int depth)
+{
+    print_n_stars(depth);
+    printf("Running equation %s\n", element->name);
+    for (int i=0; i<element->component_count; i++)
+    {
+        
+    }
+}
+
 // sample line: 12 HKGWZ, 1 GPVTF, 8 PSHF => 9 Q4DVJ
 // assumption is that line has end of line characters removed
 void process_line(elements * world, char * line)
