@@ -9,8 +9,10 @@ int main (int argc, char * argv[])
     FILE * infile=NULL;
     char buffer[1024];
     elements world;
+    memset(&world, 0, sizeof(elements));
     
-    add_element(&world, ORE);
+    element * ore = add_element(&world, ORE);
+    set_output_amount(ore, 1);
     
     memset(&buffer, '\0', sizeof(buffer));
     
@@ -45,8 +47,12 @@ int main (int argc, char * argv[])
     }
     
     fclose(infile);
-    
+    //dump_names(&world);
     fix_up_component_pointers(&world);
+    element * fuel = find_element(&world, FUEL);
+    fuel->needed=1;
+    work_it(&world);
+    printf("There were %d units of %s used\n", ore->produced, ORE);
     
     return 0;
 }

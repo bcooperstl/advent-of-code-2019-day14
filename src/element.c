@@ -7,6 +7,7 @@
 
 element * add_element(elements * world, char * name)
 {
+    printf("name %s num_elements %d\n", name, world->num_elements);
     if (world->num_elements == MAX_ELEMENTS)
     {
         fprintf(stderr, "TOO MANY ELEMENTS IN WORLD; INCREASE MAX_ELEMENTS\n");
@@ -70,20 +71,68 @@ void fix_up_component_pointers(elements * world)
     }
 }
 
-void print_n_stars(int qty)
+void work_it(elements * world)
 {
-    for (int i=0; i<qty; i++)
-        printf("%c", '*');
+    while (any_needed(world))
+    {
+        for (int i=0; i<world->num_elements; i++)
+        {
+            element * elem = &world->list[i];
+            if (elem->needed > 0)
+            {
+                printf("element %s has %d needed\n", elem->name, elem->needed);
+                if (elem->available > 0)
+                {
+                    int avail_to_use=(elem->needed > elem->available ? elem->available : elem->needed);
+                    printf("  element %s has %d available using %d of them\n", elem->name, elem->available, avail_to_use);
+                    elem->needed-=avail_to_use;
+                    elem->available-=avail_to_use;
+                    elem->consumed+=avail_to_use;
+                    if (elem->needed==0)
+                    {
+                        printf("   element %s had need filled due to available. no need to run reaction\n", elem->name);
+                        continue;
+                    }
+                    printf("   element %s now has %d needed\n", elem->name, elem->needed);
+                }
+                
+                int reaction_count=((elem->needed-1)/elem->output_amount)+1;
+                printf("  the reaction produces %d, so it needs to run it %d times\n", elem->output_amount, reaction_count);
+                
+                // increase the needed for each component
+                for (int j=0; j<elem->component_count; j++)
+                {
+                    element * component=elem->components[j];
+                    int component_needed_for_reaction=reaction_count*elem->component_amounts[j];
+                    printf("  need %d of component %s\n", component_needed_for_reaction, component->name);
+                    component->needed+=component_needed_for_reaction;
+                }
+                
+                // increase the output for this element
+                int num_produced=reaction_count*elem->output_amount;
+                
+                elem->produced+=num_produced;
+                elem->available+=num_produced;
+                printf("  produces %d of %s bring total available to %d and total produced to %d\n", num_produced, elem->name, elem->available, elem->produced);
+                
+                // consume those that are needed
+                elem->available-=elem->needed;
+                elem->consumed+=elem->needed;
+                printf("   %d of element %s consumed, leaving %d available and upping total of it consumed to %d\n", elem->needed, elem->name, elem->available, elem->consumed);
+                elem->needed=0;
+            }
+        }
+    }
 }
 
-void run_equation(element * element, int depth)
+int any_needed(elements * world)
 {
-    print_n_stars(depth);
-    printf("Running equation %s\n", element->name);
-    for (int i=0; i<element->component_count; i++)
+    for (int i=0; i<world->num_elements; i++)
     {
-        
+        if (world->list[i].needed > 0)
+            return 1;
     }
+    return 0;
 }
 
 // sample line: 12 HKGWZ, 1 GPVTF, 8 PSHF => 9 Q4DVJ
@@ -136,5 +185,17 @@ void process_line(elements * world, char * line)
         add_component(output, name, qty);
         
         pos=endptr+2; // skip over the comma and the space
+    }
+}
+
+void dump_names(elements * world)
+{
+    for (int i=0; i<world->num_elements; i++)
+    {
+        printf("%d [%s]\n", i, world->list[i].name);
+        for (int j=0; j<world->list[i].component_count; j++)
+        {
+            printf("  %d[%d] [%s]\n", i, j, world->list[i].component_names[j]);
+        }
     }
 }

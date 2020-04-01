@@ -15,6 +15,7 @@ struct element {
     struct element * components[MAX_COMPONENTS]; // the list of all component elements needed to make this element
     char component_names[MAX_COMPONENTS][NAME_LENGTH+1]; // the list of names of components
     int component_amounts[MAX_COMPONENTS]; // amount of input for each component
+    int needed;
     int produced;
     int consumed;
     int available;
@@ -26,8 +27,6 @@ struct elements
 {
     element list[MAX_ELEMENTS];
     int num_elements;
-    element * ore;
-    element * fuel;
 };
 
 typedef struct elements elements;
@@ -38,6 +37,8 @@ void set_output_amount(element * element, int output_amount);
 void add_component(element * element, char * component_name, int component_amount);
 void fix_up_component_pointers(elements * world);
 void process_line(elements * world, char * line);
-void run_equation(element * element);
+int any_needed(elements * world);
+void work_it(elements * world);
+void dump_names(elements * world);
 
 #endif
