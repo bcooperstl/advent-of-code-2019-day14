@@ -7,14 +7,14 @@
 
 element * add_element(elements * world, char * name)
 {
-    printf("name %s num_elements %ld\n", name, world->num_elements);
+    //printf("name %s num_elements %ld\n", name, world->num_elements);
     if (world->num_elements == MAX_ELEMENTS)
     {
         fprintf(stderr, "TOO MANY ELEMENTS IN WORLD; INCREASE MAX_ELEMENTS\n");
         exit(1);
     }
     element * ret = &world->list[world->num_elements];
-    printf("Added %s to the world in position #%d\n", name, world->num_elements);
+    //printf("Added %s to the world in position #%d\n", name, world->num_elements);
     world->num_elements++;
     strncpy(ret->name, name, NAME_LENGTH);
     return ret;
@@ -23,7 +23,7 @@ element * add_element(elements * world, char * name)
 void set_output_amount(element * element, long output_amount)
 {
     element->output_amount=output_amount;
-    printf("Set the output amount for %s to %ld\n", element->name, output_amount);
+    //printf("Set the output amount for %s to %ld\n", element->name, output_amount);
 }
 
 void add_component(element * element, char * component_name, long component_amount)
@@ -34,7 +34,7 @@ void add_component(element * element, char * component_name, long component_amou
         exit(1);
     }
     
-    printf("Set element %s to have component #%d of %ld units of %s\n", element->name, element->component_count, component_amount, component_name);
+    //printf("Set element %s to have component #%d of %ld units of %s\n", element->name, element->component_count, component_amount, component_name);
     strncpy(element->component_names[element->component_count], component_name, NAME_LENGTH);
     element->component_amounts[element->component_count]=component_amount;
     element->component_count++;
@@ -56,7 +56,7 @@ void fix_up_component_pointers(elements * world)
 {
     for (long i=0; i<world->num_elements; i++)
     {
-        printf("Fixing up components for %s (%d)\n", world->list[i].name, i);
+        //printf("Fixing up components for %s (%d)\n", world->list[i].name, i);
         for (long j=0; j<world->list[i].component_count; j++)
         {
             element * found = find_element(world, world->list[i].component_names[j]);
@@ -66,7 +66,7 @@ void fix_up_component_pointers(elements * world)
                 exit(1);
             }
             world->list[i].components[j] = found;
-            printf("  Fixed up component %ld to point to %s\n", j, world->list[i].components[j]->name);
+            //printf("  Fixed up component %ld to point to %s\n", j, world->list[i].components[j]->name);
         }
     }
 }
@@ -80,31 +80,31 @@ void work_it(elements * world)
             element * elem = &world->list[i];
             if (elem->needed > 0)
             {
-                printf("element %s has %ld needed\n", elem->name, elem->needed);
+                //printf("element %s has %ld needed\n", elem->name, elem->needed);
                 if (elem->available > 0)
                 {
                     long avail_to_use=(elem->needed > elem->available ? elem->available : elem->needed);
-                    printf("  element %s has %ld available using %ld of them\n", elem->name, elem->available, avail_to_use);
+                    //printf("  element %s has %ld available using %ld of them\n", elem->name, elem->available, avail_to_use);
                     elem->needed-=avail_to_use;
                     elem->available-=avail_to_use;
                     elem->consumed+=avail_to_use;
                     if (elem->needed==0)
                     {
-                        printf("   element %s had need filled due to available. no need to run reaction\n", elem->name);
+                        //printf("   element %s had need filled due to available. no need to run reaction\n", elem->name);
                         continue;
                     }
-                    printf("   element %s now has %ld needed\n", elem->name, elem->needed);
+                    //printf("   element %s now has %ld needed\n", elem->name, elem->needed);
                 }
                 
                 long reaction_count=((elem->needed-1)/elem->output_amount)+1;
-                printf("  the reaction produces %ld, so it needs to run it %ld times\n", elem->output_amount, reaction_count);
+                //printf("  the reaction produces %ld, so it needs to run it %ld times\n", elem->output_amount, reaction_count);
                 
                 // increase the needed for each component
                 for (long j=0; j<elem->component_count; j++)
                 {
                     element * component=elem->components[j];
                     long component_needed_for_reaction=reaction_count*elem->component_amounts[j];
-                    printf("  need %ld of component %s\n", component_needed_for_reaction, component->name);
+                    //printf("  need %ld of component %s\n", component_needed_for_reaction, component->name);
                     component->needed+=component_needed_for_reaction;
                 }
                 
@@ -113,12 +113,12 @@ void work_it(elements * world)
                 
                 elem->produced+=num_produced;
                 elem->available+=num_produced;
-                printf("  produces %ld of %s bring total available to %ld and total produced to %ld\n", num_produced, elem->name, elem->available, elem->produced);
+                //printf("  produces %ld of %s bring total available to %ld and total produced to %ld\n", num_produced, elem->name, elem->available, elem->produced);
                 
                 // consume those that are needed
                 elem->available-=elem->needed;
                 elem->consumed+=elem->needed;
-                printf("   %ld of element %s consumed, leaving %ld available and upping total of it consumed to %ld\n", elem->needed, elem->name, elem->available, elem->consumed);
+                //printf("   %ld of element %s consumed, leaving %ld available and upping total of it consumed to %ld\n", elem->needed, elem->name, elem->available, elem->consumed);
                 elem->needed=0;
             }
         }
